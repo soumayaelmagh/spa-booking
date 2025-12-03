@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
 
   const slots: string[] = [];
 
-  // from 10:00 to 19:00, every 30 minutes
+  // from 10:00 to 21:00, every 30 minutes
   const startHour = 10;
-  const endHour = 19;
+  const endHour = 21;
 
   for (let hour = startHour; hour < endHour; hour++) {
     const h = hour.toString().padStart(2, "0");

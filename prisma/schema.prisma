@@ -81,7 +81,7 @@ model WorkingHours {
   id        Int       @id @default(autoincrement())
   dayOfWeek DayOfWeek
   startTime String    // "10:00"
-  endTime   String    // "19:00"
+  endTime   String    // "21:00"
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
