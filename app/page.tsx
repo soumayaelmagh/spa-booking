@@ -1,65 +1,101 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-[calc(100vh-80px)] bg-[#F7F3EE] text-slate-800">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 lg:grid lg:grid-cols-2 lg:items-center lg:px-8 lg:py-16">
+        {/* LEFT: text + CTA */}
+        <section className="space-y-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-400">
+            Fifth Avenue Wellness & Spa
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Welcome to{" "}
+            <span className="text-yellow-500">Fifth Avenue</span>
+          </h1>
+
+          <p className="max-w-md text-sm leading-relaxed text-slate-800 sm:text-base">
+            Escape the noise of the city and step into a space of calm.
+            From hammam rituals and relaxing massages to hair, nails and
+            facial care, our team is here to make you feel renewed.
+          </p>
+
+          <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
+            Hammam · Massage · Hair · Nails · Facial
+          </p>
+
+        <div
+            className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center animate-fadeInUp"   >
+            {/* Book button */}
+            <Link href="/booking" className="w-full sm:w-auto group">
+                <Button
+                  size="lg"
+                  className="w-full rounded-full px-8 sm:w-auto transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(255,200,65,0.4)] hover:text-yellow-300 active:scale-[0.97]"
+                >
+                Book your appointment
+                </Button>
+            </Link>
+
+            {/* Menu button */}
+            <Link href="/menu" className="w-full sm:w-auto group">
+                <Button
+                variant="outline"
+                size="lg"
+                className=" w-full rounded-full px-8 sm:w-auto border-amber-300 text-amber-300 hover:bg-amber-300/10 transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(255,200,65,0.3)] active:scale-[0.97]">
+                View Menu
+                </Button>
+            </Link>
+            </div>
+
+        </section>
+
+        {/* RIGHT: image collage */}
+        <section className="relative h-80 w-full lg:h-[460px]">
+          <div className="pointer-events-none absolute inset-0 rounded-[3rem] bg-linear-to-br from-amber-200/5 via-amber-500/5 to-slate-900/60 blur-3xl" />
+
+          <div className="relative grid h-full grid-cols-2 gap-4">
+            {/* big left image */}
+            <div className="relative row-span-2 rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-xl shadow-black/40">
+              <Image
+                src="/images/spa-1.png"
+                alt="Hammam and massage area at Fifth Avenue"
+                fill
+                className="rounded-3xl object-cover"
+                priority
+              />
+            </div>
+
+            {/* top-right small image */}
+            <div className="relative rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-lg shadow-black/40">
+              <Image
+                src="/images/spa-2.png"
+                alt="Relaxing massage at Fifth Avenue"
+                fill
+                className="rounded-3xl object-cover"
+              />
+            </div>
+
+            {/* bottom-right small image */}
+            <div className="relative rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-lg shadow-black/40">
+              <Image
+                src="/images/spa-3.png"
+                alt="Hair and beauty area at Fifth Avenue"
+                fill
+                className="rounded-3xl object-cover"
+              />
+            </div>
+          </div>
+
+          {/* badge */}
+          <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/80 px-4 py-2 text-xs text-amber-100 shadow-lg shadow-black/40 backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>Now accepting online bookings</span>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

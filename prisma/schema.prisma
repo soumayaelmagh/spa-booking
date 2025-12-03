@@ -1,0 +1,126 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------
+// ENUMS
+// --------------
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum ServiceCategory {
+  HAIR
+  HAMMAM_MASSAGE
+  NAILS
+  LASHES
+  FACIAL
+}
+
+// --------------
+// MODELS
+// --------------
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(CLIENT)
+
+  bookings     Booking[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Service {
+  id              Int             @id @default(autoincrement())
+  name            String
+  description     String?
+  durationMinutes Int
+  price           Int
+  isActive        Boolean         @default(true)
+
+  category        ServiceCategory @default(HAIR)
+
+  bookings        Booking[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model WorkingHours {
+  id        Int       @id @default(autoincrement())
+  dayOfWeek DayOfWeek
+  startTime String    // "10:00"
+  endTime   String    // "19:00"
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([dayOfWeek])
+}
+
+model BlockedSlot {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  startTime String   // "12:00"
+  endTime   String   // "14:00"
+  reason    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+
+  clientId  Int
+  client    User          @relation(fields: [clientId], references: [id])
+
+  serviceId Int
+  service   Service       @relation(fields: [serviceId], references: [id])
+
+  date      DateTime
+  startTime String
+  endTime   String
+
+  status    BookingStatus @default(PENDING)
+  notes     String?
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
