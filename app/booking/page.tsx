@@ -193,11 +193,18 @@ export default function BookingPage() {
   // -------------------------
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Book an Appointment</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Choose your service, pick a date and time, and we’ll reserve your spot.
-        </p>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Book an Appointment</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Choose your service, pick a date and time, and we’ll reserve your spot.
+          </p>
+        </div>
+        <Button variant="outline" asChild>
+          <a href="/menu" className="rounded-full border-amber-500 text-amber-700 hover:bg-amber-50">
+            Back to menu
+          </a>
+        </Button>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
