@@ -31,6 +31,8 @@ type Service = {
   category: ServiceCategory;
 };
 
+const moroccoPhonePattern = /^(?:\+212|0)(?:5|6|7)\d{8}$/; // digits only, no spaces/dashes
+
 export default function BookingPage() {
   // Services & filters
   const [services, setServices] = useState<Service[]>([]);
@@ -45,6 +47,7 @@ export default function BookingPage() {
   // Client info
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   // UI state
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -127,8 +130,14 @@ export default function BookingPage() {
   async function submitBooking() {
     if (!selectedService || !selectedDate || !selectedTime) return;
     if (!clientName) return;
+    const normalizedPhone = clientPhone.replace(/[\s-]/g, "").trim();
+    if (!moroccoPhonePattern.test(normalizedPhone)) {
+      setPhoneError("Enter a valid Moroccan number (start with +212 or 0, digits only).");
+      return;
+    }
 
     setSubmitting(true);
+    setPhoneError(null);
 
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
@@ -338,17 +347,27 @@ export default function BookingPage() {
                 <div>
                   <Label>Name</Label>
                   <Input
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <Input
-                    value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                  />
-                </div>
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input
+                value={clientPhone}
+                onChange={(e) => {
+                  setClientPhone(e.target.value);
+                  const normalized = e.target.value.replace(/[\s-]/g, "").trim();
+                  if (phoneError && moroccoPhonePattern.test(normalized)) {
+                    setPhoneError(null);
+                  }
+                }}
+                placeholder="+212612345678"
+              />
+              {phoneError && (
+                <p className="mt-1 text-xs text-red-500">{phoneError}</p>
+              )}
+            </div>
 
                 <Button
                   className="w-full"
