@@ -32,6 +32,7 @@ type Service = {
 };
 
 const moroccoPhonePattern = /^(?:\+212|0)(?:5|6|7)\d{8}$/; // digits only, no spaces/dashes
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function BookingPage() {
   // Services & filters
@@ -46,8 +47,10 @@ export default function BookingPage() {
 
   // Client info
   const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   // UI state
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -130,6 +133,11 @@ export default function BookingPage() {
   async function submitBooking() {
     if (!selectedService || !selectedDate || !selectedTime) return;
     if (!clientName) return;
+    const normalizedEmail = clientEmail.trim().toLowerCase();
+    if (!emailPattern.test(normalizedEmail)) {
+      setEmailError("Enter a valid email.");
+      return;
+    }
     const normalizedPhone = clientPhone.replace(/[\s-]/g, "").trim();
     if (!moroccoPhonePattern.test(normalizedPhone)) {
       setPhoneError("Enter a valid Moroccan number (start with +212 or 0, digits only).");
@@ -137,6 +145,7 @@ export default function BookingPage() {
     }
 
     setSubmitting(true);
+    setEmailError(null);
     setPhoneError(null);
 
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
@@ -149,7 +158,8 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           name: clientName,
-          phone: clientPhone,
+          email: normalizedEmail,
+          phone: normalizedPhone,
           serviceId: Number(selectedService),
           date: formattedDate,
           time: selectedTime,
@@ -188,6 +198,7 @@ export default function BookingPage() {
             setSelectedDate(undefined);
             setSelectedTime(null);
             setClientName("");
+            setClientEmail("");
             setClientPhone("");
           }}
         >
@@ -352,6 +363,23 @@ export default function BookingPage() {
               />
             </div>
             <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={clientEmail}
+                onChange={(e) => {
+                  setClientEmail(e.target.value);
+                  if (emailError && emailPattern.test(e.target.value.trim().toLowerCase())) {
+                    setEmailError(null);
+                  }
+                }}
+                placeholder="you@example.com"
+              />
+              {emailError && (
+                <p className="mt-1 text-xs text-red-500">{emailError}</p>
+              )}
+            </div>
+            <div>
               <Label>Phone</Label>
               <Input
                 value={clientPhone}
@@ -370,16 +398,17 @@ export default function BookingPage() {
             </div>
 
                 <Button
-                  className="w-full"
-                  onClick={submitBooking}
-                  disabled={
-                    submitting ||
-                    !clientName ||
-                    !selectedService ||
-                    !selectedDate ||
-                    !selectedTime
-                  }
-                >
+              className="w-full"
+              onClick={submitBooking}
+              disabled={
+                submitting ||
+                !clientName ||
+                !clientEmail ||
+                !selectedService ||
+                !selectedDate ||
+                !selectedTime
+              }
+            >
                   {submitting ? "Submitting..." : "Confirm Booking"}
                 </Button>
               </CardContent>

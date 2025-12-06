@@ -45,9 +45,9 @@ function capacityForGroup(group: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, serviceId, date, time, notes } = body || {};
+    const { name, phone, email, serviceId, date, time, notes } = body || {};
 
-    if (!name || !serviceId || !date || !time) {
+    if (!name || !email || !serviceId || !date || !time) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -137,15 +137,22 @@ export async function POST(req: NextRequest) {
     }
 
 
-    // Create a lightweight guest user to satisfy the booking relation.
+    // Reuse or create user by email
     const guestEmail = `guest-${Date.now()}-${Math.random()
       .toString(16)
       .slice(2)}@bookings.local`;
-    const user = await prisma.user.create({
-      data: {
+    const safeEmail = (email as string)?.trim().toLowerCase() || guestEmail;
+
+    const user = await prisma.user.upsert({
+      where: { email: safeEmail },
+      update: {
         name,
         phone: phone || null,
-        email: guestEmail,
+      },
+      create: {
+        name,
+        phone: phone || null,
+        email: safeEmail,
         passwordHash: "guest",
       },
     });
