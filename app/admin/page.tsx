@@ -89,7 +89,7 @@ export default function AdminPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-amber-700">Admin</p>
-          <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+          <h1 className="text-3xl font-bold  text-amber-600 tracking-tight">Appointments</h1>
         </div>
         {loggedIn && (
           <Button variant="outline" onClick={handleLogout}>
