@@ -42,8 +42,9 @@ export default function AdminPage() {
       const data: Booking[] = await res.json();
       setBookings(data);
       setLoggedIn(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load bookings");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load bookings";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -69,8 +70,9 @@ export default function AdminPage() {
       setEmail("");
       setPassword("");
       await fetchBookings();
-    } catch (err: any) {
-      setError(err?.message || "Login failed");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
     } finally {
       setLoggingIn(false);
     }
