@@ -129,12 +129,20 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold  text-amber-600 tracking-tight">Appointments</h1>
         </div>
         {loggedIn && (
-          <Button
-            onClick={handleLogout}
-            className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
-          >
-            Log out
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              asChild
+              className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+            >
+              <a href="/booking">Create appointment</a>
+            </Button>
+            <Button
+              onClick={handleLogout}
+              className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+            >
+              Log out
+            </Button>
+          </div>
         )}
       </div>
 
