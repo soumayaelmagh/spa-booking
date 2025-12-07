@@ -25,6 +25,7 @@ export default function AdminPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   async function fetchBookings() {
     setLoading(true);
@@ -53,6 +54,33 @@ export default function AdminPage() {
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  async function updateStatus(id: number, status: "CONFIRMED" | "CANCELLED") {
+    setUpdatingId(id);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.status === 401) {
+        setLoggedIn(false);
+        setBookings([]);
+        setError("Session expired. Please log in again.");
+        return;
+      }
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      await fetchBookings(); // refresh from DB to ensure UI matches persisted state
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to update booking";
+      setError(message);
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -158,12 +186,31 @@ export default function AdminPage() {
                       {new Date(b.date).toLocaleDateString()} · {b.startTime}–{b.endTime}
                     </div>
                     <div className="mt-1 text-sm text-slate-700">
-                      {b.client.name} · {b.client.email}
+                      {b.client.name}
                       {b.client.phone ? ` · ${b.client.phone}` : ""}
                     </div>
-                    {b.notes && (
-                      <div className="mt-1 text-sm text-slate-500">Notes: {b.notes}</div>
-                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateStatus(b.id, "CONFIRMED")}
+                        disabled={updatingId === b.id || b.status === "CONFIRMED"}
+                      >
+                        {updatingId === b.id && b.status !== "CONFIRMED"
+                          ? "Updating..."
+                          : "Confirm"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => updateStatus(b.id, "CANCELLED")}
+                        disabled={updatingId === b.id || b.status === "CANCELLED"}
+                      >
+                        {updatingId === b.id && b.status !== "CANCELLED"
+                          ? "Updating..."
+                          : "Cancel"}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
