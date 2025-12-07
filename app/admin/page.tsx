@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   async function fetchBookings() {
     setLoading(true);
@@ -55,14 +56,19 @@ export default function AdminPage() {
     fetchBookings();
   }, []);
 
-  async function updateStatus(id: number, status: "CONFIRMED" | "CANCELLED") {
-    setUpdatingId(id);
+  async function updateStatus(status: "CONFIRMED" | "CANCELLED", idParam?: number) {
+    const targetId = idParam ?? selectedId;
+    if (!targetId) {
+      setError("Select a booking first.");
+      return;
+    }
+    setUpdatingId(targetId);
     setError(null);
     try {
       const res = await fetch("/api/admin/bookings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id: targetId, status }),
         credentials: "include",
       });
       if (res.status === 401) {
@@ -169,6 +175,26 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {error && <p className="text-sm text-red-500">{error}</p>}
+            {bookings.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+                  onClick={() => updateStatus("CONFIRMED")}
+                  disabled={updatingId !== null || !selectedId}
+                >
+                  {updatingId && selectedId === updatingId ? "Confirming..." : "Confirm"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => updateStatus("CANCELLED")}
+                  disabled={updatingId !== null || !selectedId}
+                >
+                  {updatingId && selectedId === updatingId ? "Cancelling..." : "Cancel"}
+                </Button>
+              </div>
+            )}
             {loading ? (
               <p className="text-sm text-slate-400">Loading...</p>
             ) : bookings.length === 0 ? (
@@ -178,7 +204,12 @@ export default function AdminPage() {
                 {bookings.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm"
+                    className={`rounded-lg border px-4 py-3 shadow-sm cursor-pointer ${
+                      selectedId === b.id
+                        ? "border-amber-400 bg-amber-50"
+                        : "border-slate-200 bg-white hover:border-amber-200"
+                    }`}
+                    onClick={() => setSelectedId(b.id)}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="font-semibold">{b.service.name}</div>
@@ -193,28 +224,9 @@ export default function AdminPage() {
                       {b.client.name}
                       {b.client.phone ? ` · ${b.client.phone}` : ""}
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateStatus(b.id, "CONFIRMED")}
-                        disabled={updatingId === b.id || b.status === "CONFIRMED"}
-                      >
-                        {updatingId === b.id && b.status !== "CONFIRMED"
-                          ? "Updating..."
-                          : "Confirm"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => updateStatus(b.id, "CANCELLED")}
-                        disabled={updatingId === b.id || b.status === "CANCELLED"}
-                      >
-                        {updatingId === b.id && b.status !== "CANCELLED"
-                          ? "Updating..."
-                          : "Cancel"}
-                      </Button>
-                    </div>
+                    {selectedId === b.id && (
+                      <div className="mt-1 text-xs text-amber-700">Selected</div>
+                    )}
                   </div>
                 ))}
               </div>
