@@ -240,34 +240,41 @@ export default function AdminPage() {
                       new Date(b.date).toISOString().slice(0, 10) === filterDate;
                     return categoryMatch && dateMatch;
                   })
-                  .map((b) => (
-                  <div
-                    key={b.id}
-                    className={`rounded-lg border px-4 py-3 shadow-sm cursor-pointer ${
-                      selectedId === b.id
-                        ? "border-amber-400 bg-amber-50"
-                        : "border-slate-200 bg-white hover:border-amber-200"
-                    }`}
-                    onClick={() => setSelectedId(b.id)}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="font-semibold">{b.service.name}</div>
-                      <span className="text-xs uppercase tracking-wide text-slate-500">
-                        {b.status}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-sm text-slate-600">
-                      {new Date(b.date).toLocaleDateString()} · {b.startTime}–{b.endTime}
-                    </div>
-                    <div className="mt-1 text-sm text-slate-700">
-                      {b.client.name}
-                      {b.client.phone ? ` · ${b.client.phone}` : ""}
-                    </div>
-                    {selectedId === b.id && (
-                      <div className="mt-1 text-xs text-amber-700">Selected</div>
-                    )}
-                  </div>
-                ))}
+                  .map((b) => {
+                    const isSelected = selectedId === b.id;
+                    const statusBg =
+                      b.status === "CANCELLED"
+                        ? "bg-red-50 border-red-200"
+                        : b.status === "CONFIRMED"
+                        ? "bg-emerald-50 border-emerald-200"
+                        : "bg-white border-slate-200";
+                    return (
+                      <div
+                        key={b.id}
+                        className={`rounded-lg border px-4 py-3 shadow-sm cursor-pointer ${statusBg} ${
+                          isSelected ? "ring-2 ring-amber-300" : "hover:border-amber-200"
+                        }`}
+                        onClick={() => setSelectedId(b.id)}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold">{b.service.name}</div>
+                          <span className="text-xs uppercase tracking-wide text-slate-500">
+                            {b.status}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-sm text-slate-600">
+                          {new Date(b.date).toLocaleDateString()} · {b.startTime}–{b.endTime}
+                        </div>
+                        <div className="mt-1 text-sm text-slate-700">
+                          {b.client.name}
+                          {b.client.phone ? ` · ${b.client.phone}` : ""}
+                        </div>
+                        {isSelected && (
+                          <div className="mt-1 text-xs text-amber-700">Selected</div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </CardContent>
