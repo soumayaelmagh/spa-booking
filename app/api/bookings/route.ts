@@ -1,6 +1,7 @@
 // app/api/bookings/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateAdmin } from "../admin/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ function capacityForGroup(group: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, serviceId, date, time, notes } = body || {};
+    const { name, phone, email, serviceId, date, time, notes, status: requestedStatus } = body || {};
 
     if (!name || !email || !serviceId || !date || !time) {
       return NextResponse.json(
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
     const endTime = addMinutes(time, service.durationMinutes);
     const dayStart = new Date(`${date}T00:00:00.000Z`);
     const dayEnd = new Date(`${date}T23:59:59.999Z`);
+    const isAdmin = validateAdmin(req);
 
     // Check for conflicts (overlapping bookings on the same day)
     const bookings = await prisma.booking.findMany({
@@ -157,6 +159,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const finalStatus =
+      isAdmin && requestedStatus && ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"].includes(requestedStatus)
+        ? requestedStatus
+        : "PENDING";
+
     const booking = await prisma.booking.create({
       data: {
         clientId: user.id,
@@ -164,7 +171,7 @@ export async function POST(req: NextRequest) {
         date: dayStart,
         startTime: time,
         endTime,
-        status: "PENDING",
+        status: finalStatus as any,
         notes: notes || null,
       },
     });

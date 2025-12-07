@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Select,
   SelectTrigger,
@@ -51,6 +52,9 @@ export default function BookingPage() {
   const [clientPhone, setClientPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isAdminBooking = pathname?.startsWith("/admin/booking");
 
   // UI state
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -163,6 +167,7 @@ export default function BookingPage() {
           serviceId: Number(selectedService),
           date: formattedDate,
           time: selectedTime,
+          status: isAdminBooking ? "CONFIRMED" : undefined,
         }),
       });
 
@@ -173,6 +178,10 @@ export default function BookingPage() {
       }
 
       setSuccess(true);
+      if (isAdminBooking) {
+        router.push("/admin");
+        return;
+      }
     } catch (error) {
       console.error("Error submitting booking", error);
     } finally {
