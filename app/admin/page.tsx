@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +19,16 @@ type Booking = {
   service: { name: string; category: string };
 };
 
+type Service = {
+  id: number;
+  name: string;
+  category: string;
+  durationMinutes: number;
+};
+
+const moroccoPhonePattern = /^(?:\+212|0)(?:5|6|7)\d{8}$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function AdminPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,6 +41,20 @@ export default function AdminPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
   const [filterDate, setFilterDate] = useState<string>("");
+  const [services, setServices] = useState<Service[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   async function fetchBookings() {
     setLoading(true);
@@ -57,6 +83,52 @@ export default function AdminPage() {
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    async function loadServices() {
+      try {
+        const res = await fetch("/api/services");
+        if (!res.ok) return;
+        const data: Service[] = await res.json();
+        setServices(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    if (modalOpen && services.length === 0) {
+      loadServices();
+    }
+  }, [modalOpen, services.length]);
+
+  useEffect(() => {
+    async function loadSlots() {
+      if (!selectedService || !selectedDate) return;
+      setLoadingSlots(true);
+      setAvailableSlots([]);
+      setSelectedTime("");
+      try {
+        const res = await fetch(
+          `/api/availability?serviceId=${selectedService}&date=${selectedDate}`
+        );
+        if (!res.ok) return;
+        const data: { slots: string[] } = await res.json();
+        setAvailableSlots(data.slots || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingSlots(false);
+      }
+    }
+    loadSlots();
+  }, [selectedService, selectedDate]);
+
+  const filteredServices = useMemo(
+    () =>
+      selectedCategory === "ALL"
+        ? services
+        : services.filter((s) => s.category === selectedCategory),
+    [services, selectedCategory]
+  );
 
   async function updateStatus(status: "CONFIRMED" | "CANCELLED", idParam?: number) {
     const targetId = idParam ?? selectedId;
@@ -131,10 +203,10 @@ export default function AdminPage() {
         {loggedIn && (
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              asChild
               className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+              onClick={() => setModalOpen(true)}
             >
-              <a href="/booking">Create appointment</a>
+              Create appointment
             </Button>
             <Button
               onClick={handleLogout}
@@ -287,6 +359,206 @@ export default function AdminPage() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setModalOpen(false)}
+          />
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Create Appointment</h2>
+              <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
+                Close
+              </Button>
+            </div>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Category</Label>
+                  <select
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setSelectedService("");
+                    }}
+                  >
+                    <option value="ALL">All</option>
+                    <option value="HAIR">Hair</option>
+                    <option value="HAMMAM_MASSAGE">Hammam & Massage</option>
+                    <option value="NAILS">Nails</option>
+                    <option value="LASHES">Lashes</option>
+                    <option value="FACIAL">Facial</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Service</Label>
+                  <select
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    value={selectedService}
+                    onChange={(e) => setSelectedService(e.target.value)}
+                  >
+                    <option value="">Select service</option>
+                    {filteredServices.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Date</Label>
+                  <Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Time</Label>
+                  <select
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    disabled={loadingSlots || availableSlots.length === 0}
+                  >
+                    <option value="">
+                      {loadingSlots ? "Loading..." : "Select time"}
+                    </option>
+                    {availableSlots.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Name</Label>
+                  <Input
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => {
+                      setClientEmail(e.target.value);
+                      if (
+                        emailError &&
+                        emailPattern.test(e.target.value.trim().toLowerCase())
+                      ) {
+                        setEmailError(null);
+                      }
+                    }}
+                    placeholder="you@example.com"
+                  />
+                  {emailError && (
+                    <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label>Phone</Label>
+                <Input
+                  value={clientPhone}
+                  onChange={(e) => {
+                    setClientPhone(e.target.value);
+                    const normalized = e.target.value.replace(/[\s-]/g, "").trim();
+                    if (phoneError && moroccoPhonePattern.test(normalized)) {
+                      setPhoneError(null);
+                    }
+                  }}
+                  placeholder="+212612345678"
+                />
+                {phoneError && (
+                  <p className="mt-1 text-xs text-red-500">{phoneError}</p>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+                  onClick={async () => {
+                    if (
+                      !selectedService ||
+                      !selectedDate ||
+                      !selectedTime ||
+                      !clientName
+                    ) {
+                      setError("Please fill all required fields.");
+                      return;
+                    }
+                    const normalizedEmail = clientEmail.trim().toLowerCase();
+                    if (!emailPattern.test(normalizedEmail)) {
+                      setEmailError("Enter a valid email.");
+                      return;
+                    }
+                    const normalizedPhone = clientPhone.replace(/[\s-]/g, "").trim();
+                    if (!moroccoPhonePattern.test(normalizedPhone)) {
+                      setPhoneError(
+                        "Enter a valid Moroccan number (start with +212 or 0, digits only)."
+                      );
+                      return;
+                    }
+
+                    setCreating(true);
+                    setError(null);
+                    try {
+                      const res = await fetch("/api/bookings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          name: clientName,
+                          email: normalizedEmail,
+                          phone: normalizedPhone,
+                          serviceId: Number(selectedService),
+                          date: selectedDate,
+                          time: selectedTime,
+                          status: "CONFIRMED",
+                        }),
+                        credentials: "include",
+                      });
+                      if (!res.ok) {
+                        throw new Error(await res.text());
+                      }
+                      await fetchBookings();
+                      setModalOpen(false);
+                      setSelectedService("");
+                      setSelectedDate("");
+                      setSelectedTime("");
+                      setClientName("");
+                      setClientEmail("");
+                      setClientPhone("");
+                      setEmailError(null);
+                      setPhoneError(null);
+                    } catch (err) {
+                      const message =
+                        err instanceof Error ? err.message : "Failed to create booking";
+                      setError(message);
+                    } finally {
+                      setCreating(false);
+                    }
+                  }}
+                  disabled={creating}
+                >
+                  {creating ? "Creating..." : "Create booking"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
