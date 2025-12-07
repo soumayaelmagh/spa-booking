@@ -27,6 +27,8 @@ export default function AdminPage() {
   const [loggingIn, setLoggingIn] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string>("ALL");
+  const [filterDate, setFilterDate] = useState<string>("");
 
   async function fetchBookings() {
     setLoading(true);
@@ -176,23 +178,51 @@ export default function AdminPage() {
           <CardContent className="space-y-4">
             {error && <p className="text-sm text-red-500">{error}</p>}
             {bookings.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
-                  onClick={() => updateStatus("CONFIRMED")}
-                  disabled={updatingId !== null || !selectedId}
-                >
-                  {updatingId && selectedId === updatingId ? "Confirming..." : "Confirm"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => updateStatus("CANCELLED")}
-                  disabled={updatingId !== null || !selectedId}
-                >
-                  {updatingId && selectedId === updatingId ? "Cancelling..." : "Cancel"}
-                </Button>
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-end gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Category</label>
+                    <select
+                      className="block rounded-md border px-3 py-2 text-sm"
+                      value={filterCategory}
+                      onChange={(e) => setFilterCategory(e.target.value)}
+                    >
+                      <option value="ALL">All</option>
+                      <option value="HAIR">Hair</option>
+                      <option value="HAMMAM_MASSAGE">Hammam & Massage</option>
+                      <option value="NAILS">Nails</option>
+                      <option value="LASHES">Lashes</option>
+                      <option value="FACIAL">Facial</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-600">Date</label>
+                    <input
+                      type="date"
+                      className="block rounded-md border px-3 py-2 text-sm"
+                      value={filterDate}
+                      onChange={(e) => setFilterDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+                      onClick={() => updateStatus("CONFIRMED")}
+                      disabled={updatingId !== null || !selectedId}
+                    >
+                      {updatingId && selectedId === updatingId ? "Confirming..." : "Confirm"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => updateStatus("CANCELLED")}
+                      disabled={updatingId !== null || !selectedId}
+                    >
+                      {updatingId && selectedId === updatingId ? "Cancelling..." : "Cancel"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
             {loading ? (
@@ -201,7 +231,16 @@ export default function AdminPage() {
               <p className="text-sm text-slate-400">No bookings yet.</p>
             ) : (
               <div className="space-y-3">
-                {bookings.map((b) => (
+                {bookings
+                  .filter((b) => {
+                    const categoryMatch =
+                      filterCategory === "ALL" || b.service.category === filterCategory;
+                    const dateMatch =
+                      !filterDate ||
+                      new Date(b.date).toISOString().slice(0, 10) === filterDate;
+                    return categoryMatch && dateMatch;
+                  })
+                  .map((b) => (
                   <div
                     key={b.id}
                     className={`rounded-lg border px-4 py-3 shadow-sm cursor-pointer ${
