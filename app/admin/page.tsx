@@ -63,6 +63,7 @@ export default function AdminPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
+        credentials: "include",
       });
       if (res.status === 401) {
         setLoggedIn(false);
@@ -120,7 +121,10 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold  text-amber-600 tracking-tight">Appointments</h1>
         </div>
         {loggedIn && (
-          <Button variant="outline" onClick={handleLogout}>
+          <Button
+            onClick={handleLogout}
+            className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
+          >
             Log out
           </Button>
         )}
