@@ -361,14 +361,14 @@ export default function AdminPage() {
       )}
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 text-slate-800">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setModalOpen(false)}
           />
-          <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl text-slate-800">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Create Appointment</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Create Appointment</h2>
               <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
                 Close
               </Button>
@@ -376,9 +376,9 @@ export default function AdminPage() {
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Category</Label>
+                  <Label className="text-slate-700">Category</Label>
                   <select
-                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
@@ -394,9 +394,9 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <Label>Service</Label>
+                  <Label className="text-slate-700">Service</Label>
                   <select
-                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedService}
                     onChange={(e) => setSelectedService(e.target.value)}
                   >
@@ -411,17 +411,18 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Date</Label>
+                  <Label className="text-slate-700">Date</Label>
                   <Input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
+                    className="text-slate-800"
                   />
                 </div>
                 <div>
-                  <Label>Time</Label>
+                  <Label className="text-slate-700">Time</Label>
                   <select
-                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
                     disabled={loadingSlots || availableSlots.length === 0}
@@ -439,14 +440,15 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Name</Label>
+                  <Label className="text-slate-700">Name</Label>
                   <Input
+                    className="text-slate-800"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label>Email</Label>
+                  <Label className="text-slate-700">Email</Label>
                   <Input
                     type="email"
                     value={clientEmail}
@@ -460,6 +462,7 @@ export default function AdminPage() {
                       }
                     }}
                     placeholder="you@example.com"
+                    className="text-slate-800"
                   />
                   {emailError && (
                     <p className="mt-1 text-xs text-red-500">{emailError}</p>
@@ -467,7 +470,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <div>
-                <Label>Phone</Label>
+                <Label className="text-slate-700">Phone</Label>
                 <Input
                   value={clientPhone}
                   onChange={(e) => {
@@ -478,6 +481,7 @@ export default function AdminPage() {
                     }
                   }}
                   placeholder="+212612345678"
+                  className="text-slate-800"
                 />
                 {phoneError && (
                   <p className="mt-1 text-xs text-red-500">{phoneError}</p>
