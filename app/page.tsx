@@ -96,7 +96,6 @@ export default function HomePage() {
             <div className="relative row-span-2 rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-xl shadow-black/40">
               <Image
                 src="/images/spa-1.png"
-                alt="Hammam and massage area at Fifth Avenue"
                 alt={t.hero1}
                 fill
                 className="rounded-3xl object-cover"
@@ -108,7 +107,6 @@ export default function HomePage() {
             <div className="relative rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-lg shadow-black/40">
               <Image
                 src="/images/spa-2.png"
-                alt="Relaxing massage at Fifth Avenue"
                 alt={t.hero2}
                 fill
                 className="rounded-3xl object-cover"
@@ -119,7 +117,6 @@ export default function HomePage() {
             <div className="relative rounded-3xl border border-slate-800/70 bg-slate-900/60 shadow-lg shadow-black/40">
               <Image
                 src="/images/spa-3.png"
-                alt="Hair and beauty area at Fifth Avenue"
                 alt={t.hero3}
                 fill
                 className="rounded-3xl object-cover"
