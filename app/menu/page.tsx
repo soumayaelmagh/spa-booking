@@ -1,13 +1,43 @@
- "use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/language-provider";
+
+const copy = {
+  en: {
+    kicker: "Fifth Avenue Wellness & Spa",
+    title: "Service Menu",
+    subtitle:
+      "Discover all our hair, hammam & massage, nails, lashes and facial treatments.",
+    back: "Back to main page",
+    book: "Book an appointment",
+    note:
+      "Prices are in Moroccan Dirham (DH) and may vary depending on hair length and personalized treatments. For tailored advice, please contact the spa.",
+    imageAlt: (i: number) => `Fifth Avenue menu page ${i + 1}`,
+    close: "Close preview",
+  },
+  fr: {
+    kicker: "Fifth Avenue Wellness & Spa",
+    title: "Carte des services",
+    subtitle:
+      "Découvrez tous nos soins coiffure, hammam & massage, ongles, extensions de cils et soins du visage.",
+    back: "Retour à la page d'accueil",
+    book: "Prendre rendez-vous",
+    note:
+      "Les prix sont indiqués en Dirham marocain (DH) et peuvent varier selon la longueur des cheveux et les soins personnalisés. Pour un conseil sur mesure, contactez le spa.",
+    imageAlt: (i: number) => `Page ${i + 1} du menu Fifth Avenue`,
+    close: "Fermer l'aperçu",
+  },
+};
 
 export default function MenuPage() {
   const pages = ["/images/menu-1.jpg", "/images/menu-2.jpg", "/images/menu-3.jpg"];
   const [activePage, setActivePage] = useState<string | null>(null);
+  const { language } = useLanguage();
+  const t = copy[language];
 
   return (
     <main className="min-h-screen bg-[#F7F3EE] text-slate-800">
@@ -16,13 +46,13 @@ export default function MenuPage() {
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-700">
-              Fifth Avenue Wellness & Spa
+              {t.kicker}
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight">
-              Service Menu
+              {t.title}
             </h1>
             <p className="text-xs text-slate-600">
-              Discover all our hair, hammam &amp; massage, nails, lashes and facial treatments.
+              {t.subtitle}
             </p>
             
           </div>
@@ -33,12 +63,12 @@ export default function MenuPage() {
                 variant="outline"
                 className="rounded-full border-amber-600 px-5 py-2 text-sm text-amber-700 hover:bg-amber-50"
               >
-                Back to main page
+                {t.back}
               </Button>
             </Link>
             <Link href="/booking">
               <Button className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700">
-                Book an appointment
+                {t.book}
               </Button>
             </Link>
           </div>
@@ -59,8 +89,7 @@ export default function MenuPage() {
           >
             <div className="mb-4 ">
               <p className="mt-6 text-center text-xs text-slate-500">
-                Prices are in Moroccan Dirham (DH) and may vary depending on hair length
-                and personalized treatments. For tailored advice, please contact the spa.
+                {t.note}
                 </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
@@ -93,7 +122,7 @@ export default function MenuPage() {
                   <div className="relative aspect-9/16 w-full overflow-hidden rounded-2xl bg-white group">
                     <Image
                         src={src}
-                        alt={`Fifth Avenue menu page ${i + 1}`}
+                        alt={t.imageAlt(i)}
                         fill
                         className="
                         object-contain
@@ -134,7 +163,7 @@ export default function MenuPage() {
             <button
               onClick={() => setActivePage(null)}
               className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-800 shadow-md transition hover:bg-white"
-              aria-label="Close preview"
+              aria-label={t.close}
             >
               ×
             </button>

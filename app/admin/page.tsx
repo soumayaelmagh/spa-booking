@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/components/language-provider";
 
 type Booking = {
   id: number;
@@ -27,7 +27,131 @@ type Service = {
 
 const moroccoPhonePattern = /^(?:\+212|0)(?:5|6|7)\d{8}$/;
 
+type Lang = "en" | "fr";
+
+const copy = {
+  en: {
+    admin: "Admin",
+    appointments: "Appointments",
+    create: "Create appointment",
+    logout: "Log out",
+    loginTitle: "Admin Login",
+    email: "Email",
+    password: "Password",
+    signIn: "Sign in",
+    signingIn: "Signing in...",
+    allBookings: "All Bookings",
+    category: "Category",
+    date: "Date",
+    confirm: "Confirm",
+    confirming: "Confirming...",
+    cancel: "Cancel",
+    cancelling: "Cancelling...",
+    loading: "Loading...",
+    noBookings: "No bookings yet.",
+    selected: "Selected",
+    modalTitle: "Create Appointment",
+    close: "Close",
+    service: "Service",
+    time: "Time",
+    name: "Name",
+    phone: "Phone",
+    cancelModal: "Cancel",
+    createBooking: "Create booking",
+    creating: "Creating...",
+    fillRequired: "Please fill all required fields.",
+    invalidPhone: "Enter a valid Moroccan number (start with +212 or 0, digits only).",
+    selectBooking: "Select a booking first.",
+    sessionExpired: "Session expired. Please log in again.",
+    loginFailed: "Login failed",
+    loadFailed: "Failed to load bookings",
+    updateFailed: "Failed to update booking",
+    createFailed: "Failed to create booking",
+    selectService: "Select service",
+    selectTime: "Select time",
+    loadingTime: "Loading...",
+  },
+  fr: {
+    admin: "Admin",
+    appointments: "Rendez-vous",
+    create: "Créer un rendez-vous",
+    logout: "Se déconnecter",
+    loginTitle: "Connexion admin",
+    email: "Email",
+    password: "Mot de passe",
+    signIn: "Se connecter",
+    signingIn: "Connexion...",
+    allBookings: "Tous les rendez-vous",
+    category: "Catégorie",
+    date: "Date",
+    confirm: "Confirmer",
+    confirming: "Confirmation...",
+    cancel: "Annuler",
+    cancelling: "Annulation...",
+    loading: "Chargement...",
+    noBookings: "Aucune réservation pour le moment.",
+    selected: "Sélectionné",
+    modalTitle: "Créer un rendez-vous",
+    close: "Fermer",
+    service: "Prestation",
+    time: "Heure",
+    name: "Nom",
+    phone: "Téléphone",
+    cancelModal: "Annuler",
+    createBooking: "Créer la réservation",
+    creating: "Création...",
+    fillRequired: "Veuillez remplir tous les champs obligatoires.",
+    invalidPhone: "Entrez un numéro marocain valide (commence par +212 ou 0, chiffres uniquement).",
+    selectBooking: "Sélectionnez d'abord une réservation.",
+    sessionExpired: "Session expirée. Merci de vous reconnecter.",
+    loginFailed: "Échec de la connexion",
+    loadFailed: "Impossible de charger les réservations",
+    updateFailed: "Impossible de mettre à jour la réservation",
+    createFailed: "Impossible de créer la réservation",
+    selectService: "Choisir une prestation",
+    selectTime: "Choisir l'heure",
+    loadingTime: "Chargement...",
+  },
+};
+
+const categoryLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    ALL: "All",
+    HAIR: "Hair",
+    HAMMAM_MASSAGE: "Hammam & Massage",
+    NAILS: "Nails",
+    LASHES: "Lashes",
+    FACIAL: "Facial",
+  },
+  fr: {
+    ALL: "Toutes",
+    HAIR: "Coiffure",
+    HAMMAM_MASSAGE: "Hammam & Massage",
+    NAILS: "Ongles",
+    LASHES: "Cils",
+    FACIAL: "Visage",
+  },
+};
+
+const statusLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    CONFIRMED: "CONFIRMED",
+    CANCELLED: "CANCELLED",
+    PENDING: "PENDING",
+  },
+  fr: {
+    CONFIRMED: "CONFIRMÉ",
+    CANCELLED: "ANNULÉ",
+    PENDING: "EN ATTENTE",
+  },
+};
+
 export default function AdminPage() {
+  const { language } = useLanguage();
+  const t = copy[language];
+  const categoryCopy = categoryLabels[language];
+  const statusCopy = statusLabels[language];
+  const dateLocale = language === "fr" ? "fr-FR" : "en-US";
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -69,7 +193,7 @@ export default function AdminPage() {
       setBookings(data);
       setLoggedIn(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load bookings";
+      const message = err instanceof Error ? err.message : t.loadFailed;
       setError(message);
     } finally {
       setLoading(false);
@@ -83,7 +207,7 @@ export default function AdminPage() {
   useEffect(() => {
     async function loadServices() {
       try {
-        const res = await fetch("/api/services");
+        const res = await fetch(`/api/services?lang=${language}`);
         if (!res.ok) return;
         const data: Service[] = await res.json();
         setServices(data);
@@ -91,10 +215,9 @@ export default function AdminPage() {
         console.error(err);
       }
     }
-    if (modalOpen && services.length === 0) {
-      loadServices();
-    }
-  }, [modalOpen, services.length]);
+    if (!modalOpen) return;
+    loadServices();
+  }, [modalOpen, language]);
 
   useEffect(() => {
     async function loadSlots() {
@@ -129,7 +252,7 @@ export default function AdminPage() {
   async function updateStatus(status: "CONFIRMED" | "CANCELLED", idParam?: number) {
     const targetId = idParam ?? selectedId;
     if (!targetId) {
-      setError("Select a booking first.");
+      setError(t.selectBooking);
       return;
     }
     setUpdatingId(targetId);
@@ -144,7 +267,7 @@ export default function AdminPage() {
       if (res.status === 401) {
         setLoggedIn(false);
         setBookings([]);
-        setError("Session expired. Please log in again.");
+        setError(t.sessionExpired);
         return;
       }
       if (!res.ok) {
@@ -152,7 +275,7 @@ export default function AdminPage() {
       }
       await fetchBookings(); // refresh from DB to ensure UI matches persisted state
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update booking";
+      const message = err instanceof Error ? err.message : t.updateFailed;
       setError(message);
     } finally {
       setUpdatingId(null);
@@ -176,7 +299,7 @@ export default function AdminPage() {
       setPassword("");
       await fetchBookings();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed";
+      const message = err instanceof Error ? err.message : t.loginFailed;
       setError(message);
     } finally {
       setLoggingIn(false);
@@ -193,8 +316,8 @@ export default function AdminPage() {
     <main className="mx-auto max-w-5xl px-4 py-10 lg:px-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-amber-700">Admin</p>
-          <h1 className="text-3xl font-bold  text-amber-600 tracking-tight">Appointments</h1>
+          <p className="text-xs uppercase tracking-[0.25em] text-amber-700">{t.admin}</p>
+          <h1 className="text-3xl font-bold  text-amber-600 tracking-tight">{t.appointments}</h1>
         </div>
         {loggedIn && (
           <div className="flex flex-wrap items-center gap-2">
@@ -202,13 +325,13 @@ export default function AdminPage() {
               className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
               onClick={() => setModalOpen(true)}
             >
-              Create appointment
+              {t.create}
             </Button>
             <Button
               onClick={handleLogout}
               className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
             >
-              Log out
+              {t.logout}
             </Button>
           </div>
         )}
@@ -217,12 +340,12 @@ export default function AdminPage() {
       {!loggedIn ? (
         <Card className="max-w-md">
           <CardHeader>
-            <CardTitle>Admin Login</CardTitle>
+            <CardTitle>{t.loginTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <Label>Email</Label>
+                <Label>{t.email}</Label>
                 <Input
                   type="email"
                   value={email}
@@ -231,7 +354,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <Label>Password</Label>
+                <Label>{t.password}</Label>
                 <Input
                   type="password"
                   value={password}
@@ -241,7 +364,7 @@ export default function AdminPage() {
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={loggingIn}>
-                {loggingIn ? "Signing in..." : "Sign in"}
+                {loggingIn ? t.signingIn : t.signIn}
               </Button>
             </form>
           </CardContent>
@@ -249,7 +372,7 @@ export default function AdminPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>All Bookings</CardTitle>
+            <CardTitle>{t.allBookings}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && <p className="text-sm text-red-500">{error}</p>}
@@ -257,22 +380,22 @@ export default function AdminPage() {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-end gap-3">
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Category</label>
+                    <label className="text-xs font-medium text-slate-600">{t.category}</label>
                     <select
                       className="block rounded-md border px-3 py-2 text-sm"
                       value={filterCategory}
                       onChange={(e) => setFilterCategory(e.target.value)}
                     >
-                      <option value="ALL">All</option>
-                      <option value="HAIR">Hair</option>
-                      <option value="HAMMAM_MASSAGE">Hammam & Massage</option>
-                      <option value="NAILS">Nails</option>
-                      <option value="LASHES">Lashes</option>
-                      <option value="FACIAL">Facial</option>
+                      <option value="ALL">{categoryCopy.ALL}</option>
+                      <option value="HAIR">{categoryCopy.HAIR}</option>
+                      <option value="HAMMAM_MASSAGE">{categoryCopy.HAMMAM_MASSAGE}</option>
+                      <option value="NAILS">{categoryCopy.NAILS}</option>
+                      <option value="LASHES">{categoryCopy.LASHES}</option>
+                      <option value="FACIAL">{categoryCopy.FACIAL}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600">Date</label>
+                    <label className="text-xs font-medium text-slate-600">{t.date}</label>
                     <input
                       type="date"
                       className="block rounded-md border px-3 py-2 text-sm"
@@ -287,7 +410,7 @@ export default function AdminPage() {
                       onClick={() => updateStatus("CONFIRMED")}
                       disabled={updatingId !== null || !selectedId}
                     >
-                      {updatingId && selectedId === updatingId ? "Confirming..." : "Confirm"}
+                      {updatingId && selectedId === updatingId ? t.confirming : t.confirm}
                     </Button>
                     <Button
                       size="sm"
@@ -295,16 +418,16 @@ export default function AdminPage() {
                       onClick={() => updateStatus("CANCELLED")}
                       disabled={updatingId !== null || !selectedId}
                     >
-                      {updatingId && selectedId === updatingId ? "Cancelling..." : "Cancel"}
+                      {updatingId && selectedId === updatingId ? t.cancelling : t.cancel}
                     </Button>
                   </div>
                 </div>
               </div>
             )}
             {loading ? (
-              <p className="text-sm text-slate-400">Loading...</p>
+              <p className="text-sm text-slate-400">{t.loading}</p>
             ) : bookings.length === 0 ? (
-              <p className="text-sm text-slate-400">No bookings yet.</p>
+              <p className="text-sm text-slate-400">{t.noBookings}</p>
             ) : (
               <div className="space-y-3">
                 {bookings
@@ -335,18 +458,18 @@ export default function AdminPage() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="font-semibold">{b.service.name}</div>
                           <span className="text-xs uppercase tracking-wide text-slate-500">
-                            {b.status}
+                            {statusCopy[b.status] ?? b.status}
                           </span>
                         </div>
                         <div className="mt-1 text-sm text-slate-600">
-                          {new Date(b.date).toLocaleDateString()} · {b.startTime}–{b.endTime}
+                          {new Date(b.date).toLocaleDateString(dateLocale)} · {b.startTime}–{b.endTime}
                         </div>
                         <div className="mt-1 text-sm text-slate-700">
                           {b.client.name}
                           {b.client.phone ? ` · ${b.client.phone}` : ""}
                         </div>
                         {isSelected && (
-                          <div className="mt-1 text-xs text-amber-700">Selected</div>
+                          <div className="mt-1 text-xs text-amber-700">{t.selected}</div>
                         )}
                       </div>
                     );
@@ -365,15 +488,15 @@ export default function AdminPage() {
           />
           <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl text-slate-800">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">Create Appointment</h2>
+              <h2 className="text-xl font-semibold text-slate-900">{t.modalTitle}</h2>
               <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
-                Close
+                {t.close}
               </Button>
             </div>
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-slate-700">Category</Label>
+                  <Label className="text-slate-700">{t.category}</Label>
                   <select
                     className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedCategory}
@@ -382,22 +505,22 @@ export default function AdminPage() {
                       setSelectedService("");
                     }}
                   >
-                    <option value="ALL">All</option>
-                    <option value="HAIR">Hair</option>
-                    <option value="HAMMAM_MASSAGE">Hammam & Massage</option>
-                    <option value="NAILS">Nails</option>
-                    <option value="LASHES">Lashes</option>
-                    <option value="FACIAL">Facial</option>
+                    <option value="ALL">{categoryCopy.ALL}</option>
+                    <option value="HAIR">{categoryCopy.HAIR}</option>
+                    <option value="HAMMAM_MASSAGE">{categoryCopy.HAMMAM_MASSAGE}</option>
+                    <option value="NAILS">{categoryCopy.NAILS}</option>
+                    <option value="LASHES">{categoryCopy.LASHES}</option>
+                    <option value="FACIAL">{categoryCopy.FACIAL}</option>
                   </select>
                 </div>
                 <div>
-                  <Label className="text-slate-700">Service</Label>
+                  <Label className="text-slate-700">{t.service}</Label>
                   <select
                     className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedService}
                     onChange={(e) => setSelectedService(e.target.value)}
                   >
-                    <option value="">Select service</option>
+                    <option value="">{t.selectService}</option>
                     {filteredServices.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -408,7 +531,7 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-slate-700">Date</Label>
+                  <Label className="text-slate-700">{t.date}</Label>
                   <Input
                     type="date"
                     value={selectedDate}
@@ -417,7 +540,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-700">Time</Label>
+                  <Label className="text-slate-700">{t.time}</Label>
                   <select
                     className="mt-1 block w-full rounded-md border px-3 py-2 text-sm text-slate-800"
                     value={selectedTime}
@@ -425,7 +548,7 @@ export default function AdminPage() {
                     disabled={loadingSlots || availableSlots.length === 0}
                   >
                     <option value="">
-                      {loadingSlots ? "Loading..." : "Select time"}
+                      {loadingSlots ? t.loadingTime : t.selectTime}
                     </option>
                     {availableSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -436,7 +559,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <div>
-                <Label className="text-slate-700">Name</Label>
+                <Label className="text-slate-700">{t.name}</Label>
                 <Input
                   className="text-slate-800"
                   value={clientName}
@@ -444,7 +567,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <Label className="text-slate-700">Phone</Label>
+                <Label className="text-slate-700">{t.phone}</Label>
                 <Input
                   value={clientPhone}
                   onChange={(e) => {
@@ -463,7 +586,7 @@ export default function AdminPage() {
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setModalOpen(false)}>
-                  Cancel
+                  {t.cancelModal}
                 </Button>
                 <Button
                   className="rounded-full bg-amber-600 px-5 py-2 text-sm hover:bg-amber-700"
@@ -474,14 +597,12 @@ export default function AdminPage() {
                       !selectedTime ||
                       !clientName
                     ) {
-                      setError("Please fill all required fields.");
+                      setError(t.fillRequired);
                       return;
                     }
                     const normalizedPhone = clientPhone.replace(/[\s-]/g, "").trim();
                     if (!moroccoPhonePattern.test(normalizedPhone)) {
-                      setPhoneError(
-                        "Enter a valid Moroccan number (start with +212 or 0, digits only)."
-                      );
+                      setPhoneError(t.invalidPhone);
                       return;
                     }
 
@@ -507,15 +628,15 @@ export default function AdminPage() {
                       }
                       await fetchBookings();
                       setModalOpen(false);
-                      setSelectedService("");
-                      setSelectedDate("");
-    setSelectedTime("");
-    setClientName("");
-    setClientPhone("");
-    setPhoneError(null);
+                          setSelectedService("");
+                          setSelectedDate("");
+                          setSelectedTime("");
+                          setClientName("");
+                          setClientPhone("");
+                          setPhoneError(null);
                     } catch (err) {
                       const message =
-                        err instanceof Error ? err.message : "Failed to create booking";
+                        err instanceof Error ? err.message : t.createFailed;
                       setError(message);
                     } finally {
                       setCreating(false);
@@ -523,7 +644,7 @@ export default function AdminPage() {
                   }}
                   disabled={creating}
                 >
-                  {creating ? "Creating..." : "Create booking"}
+                  {creating ? t.creating : t.createBooking}
                 </Button>
               </div>
             </div>

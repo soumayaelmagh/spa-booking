@@ -126,7 +126,225 @@ const servicesData = [
   { name: "Facial - Anti-aging Treatment", durationMinutes: 60, price: 600, category: "FACIAL" },
 ];
 
+const frenchTranslations = {
+  "Hair - Balayage / Highlights (Short)": {
+    name: "Cheveux - Balayage / Mèches (Court)",
+  },
+  "Hair - Balayage / Highlights (Medium)": {
+    name: "Cheveux - Balayage / Mèches (Mi-longs)",
+  },
+  "Hair - Balayage / Highlights (Long)": {
+    name: "Cheveux - Balayage / Mèches (Long)",
+  },
+  "Hair - Ombré (Short, no toner)": {
+    name: "Cheveux - Ombré (Court, sans toner)",
+    description: "900–1200 DH",
+  },
+  "Hair - Ombré (Medium, no toner)": {
+    name: "Cheveux - Ombré (Mi-longs, sans toner)",
+    description: "1200–1400 DH",
+  },
+  "Hair - Ombré (Long, no toner)": {
+    name: "Cheveux - Ombré (Long, sans toner)",
+    description: "1400–1800 DH",
+  },
+  "Hair - Toner / Rinse": {
+    name: "Cheveux - Toner / Rinçage",
+    description: "200–300 DH",
+  },
+  "Hair - Protein Straightening": {
+    name: "Cheveux - Lissage protéiné",
+    description: "À partir de 800 DH",
+  },
+  "Hair - Botox Straightening": {
+    name: "Cheveux - Lissage Botox",
+    description: "À partir de 2000 DH",
+  },
+  "Hair - Blow-dry": {
+    name: "Cheveux - Brushing",
+    description: "80 / 100 / 120 DH",
+  },
+  "Hair - Blow-dry + Shampoo + Mask": {
+    name: "Cheveux - Brushing + Shampooing + Masque",
+  },
+  "Hair - Blow-dry + Kerastase Treatment": {
+    name: "Cheveux - Brushing + Soin Kérastase",
+  },
+  "Hair - Blow-dry + Shampoo + Kerastase Mask": {
+    name: "Cheveux - Brushing + Shampooing + Masque Kérastase",
+  },
+  "Hair - Haircut": {
+    name: "Cheveux - Coupe",
+  },
+  "Hair - Haircut + Blow-dry": {
+    name: "Cheveux - Coupe + Brushing",
+  },
+  "Hair - Fringe / Ends Trim": {
+    name: "Cheveux - Coupe frange / pointes",
+  },
+  "Hair - Wavy Styling": {
+    name: "Cheveux - Coiffage wavy",
+    description: "150 / 200 DH",
+  },
+  "Hair - Kids Haircut": {
+    name: "Cheveux - Coupe enfant",
+  },
+  "Hair Care - Classic Treatment": {
+    name: "Soin cheveux - Traitement classique",
+  },
+  "Hair Care - Fusio-Dose Treatment": {
+    name: "Soin cheveux - Traitement Fusio-Dose",
+  },
+  "Hair Care - Caviar Treatment": {
+    name: "Soin cheveux - Traitement caviar",
+  },
+  "Hair Color - Roots": {
+    name: "Coloration - Racines",
+    description: "À partir de 250 DH",
+  },
+  "Hair Color - Short Hair": {
+    name: "Coloration - Cheveux courts",
+    description: "À partir de 300 DH",
+  },
+  "Hair Color - Long Hair": {
+    name: "Coloration - Cheveux longs",
+    description: "À partir de 400 DH",
+  },
+  "Hair Color (Ammonia-free) - Roots": {
+    name: "Coloration (sans ammoniaque) - Racines",
+  },
+  "Hair Color (Ammonia-free) - Short Hair": {
+    name: "Coloration (sans ammoniaque) - Cheveux courts",
+  },
+  "Hair Color (Ammonia-free) - Long Hair": {
+    name: "Coloration (sans ammoniaque) - Cheveux longs",
+  },
+  "Hammam - Traditional Hammam (Natus) 60 min": {
+    name: "Hammam - Traditionnel (Natus) 60 min",
+    description:
+      "Enveloppement henné miel, gommage, shampooing et masque, savonnage, enveloppement corporel, ghassoul aux herbes.",
+  },
+  "Hammam - Rituals Hammam 60 min": {
+    name: "Hammam - Rituals 60 min",
+    description:
+      "Savon noir Rituals, gommage traditionnel, shampooing, masque gommant aromatique, masque corporel, huile nourrissante parfumée.",
+  },
+  "Hammam - Royal Hammam 90 min": {
+    name: "Hammam - Royal 90 min",
+    description:
+      "Parfum verveine, gommage traditionnel, masque visage au miel, shampooing et masque, massage relaxant 30 min.",
+  },
+  "Massage - Relaxing Anti-stress 30 min": {
+    name: "Massage - Relaxant anti-stress 30 min",
+  },
+  "Massage - Relaxing Anti-stress 60 min": {
+    name: "Massage - Relaxant anti-stress 60 min",
+  },
+  "Massage - Aromatic Hot Oil": {
+    name: "Massage - Huile chaude aromatique",
+  },
+  "Massage - Traditional Thai (without oil)": {
+    name: "Massage - Thaï traditionnel (sans huile)",
+  },
+  "Massage - Organic Aromatic Thai": {
+    name: "Massage - Thaï aromatique bio",
+  },
+  "Massage - 4 Hands": {
+    name: "Massage - 4 mains",
+  },
+  "Massage - Foot Reflexology 30 min": {
+    name: "Massage - Réflexologie plantaire 30 min",
+  },
+  "Massage - Foot Reflexology 60 min": {
+    name: "Massage - Réflexologie plantaire 60 min",
+  },
+  "Massage - Hot Stone": {
+    name: "Massage - Pierres chaudes",
+  },
+  "Massage - Thai with Hot Compresses": {
+    name: "Massage - Thaï aux compresses chaudes",
+  },
+  "Massage - Head Massage 30 min": {
+    name: "Massage - Crânien 30 min",
+  },
+  "Massage - Head Massage 60 min": {
+    name: "Massage - Crânien 60 min",
+  },
+  "Massage - Back & Shoulder 30 min": {
+    name: "Massage - Dos & épaules 30 min",
+  },
+  "Massage - Back & Shoulder 60 min": {
+    name: "Massage - Dos & épaules 60 min",
+  },
+  "Massage - Special Kids Massage": {
+    name: "Massage - Enfant",
+  },
+  "Nails - Manicure": {
+    name: "Ongles - Manucure",
+  },
+  "Nails - Pedicure + Normal Polish": {
+    name: "Ongles - Pédicure + vernis classique",
+  },
+  "Nails - Normal Polish": {
+    name: "Ongles - Vernis classique",
+  },
+  "Nails - Semi-permanent Polish": {
+    name: "Ongles - Vernis semi-permanent",
+  },
+  "Nails - Fake Nails + Normal Polish": {
+    name: "Ongles - Faux ongles + vernis classique",
+  },
+  "Nails - BIAB Manicure": {
+    name: "Ongles - Manucure BIAB",
+  },
+  "Nails - Gel Nails": {
+    name: "Ongles - Ongles en gel",
+  },
+  "Nails - Refill": {
+    name: "Ongles - Remplissage",
+  },
+  "Nails - Removal of Semi-permanent Polish": {
+    name: "Ongles - Dépose vernis semi-permanent",
+  },
+  "Nails - Gel Removal": {
+    name: "Ongles - Dépose gel",
+  },
+  "Lashes - Classic Full Set (one by one)": {
+    name: "Cils - Pose classique complète (un à un)",
+    description: "150 / 200 DH",
+  },
+  "Lashes - Strip / False Lashes": {
+    name: "Cils - Bande / faux cils",
+  },
+  "Lashes - Classic Extensions": {
+    name: "Cils - Extensions classiques",
+  },
+  "Lashes - Russian Volume": {
+    name: "Cils - Volume russe",
+  },
+  "Lashes - Refill": {
+    name: "Cils - Remplissage",
+  },
+  "Facial - Glow Basic Treatment": {
+    name: "Visage - Soin éclat basique",
+  },
+  "Facial - Glow 45 min": {
+    name: "Visage - Soin éclat 45 min",
+  },
+  "Facial - Hydrafacial": {
+    name: "Visage - Hydrafacial",
+  },
+  "Facial - Anti-aging Treatment": {
+    name: "Visage - Soin anti-âge",
+  },
+};
+
 async function main() {
+  console.log("🧹 Clearing existing bookings...");
+  await prisma.booking.deleteMany();
+
+  console.log("🧹 Clearing existing service translations...");
+  await prisma.serviceTranslation.deleteMany();
   console.log("🧹 Clearing existing services...");
   await prisma.service.deleteMany();
 
@@ -134,6 +352,25 @@ async function main() {
   await prisma.service.createMany({
     data: servicesData,
   });
+
+  const services = await prisma.service.findMany({ select: { id: true, name: true, description: true } });
+  const translationRows = services
+    .map((service) => {
+      const t = frenchTranslations[service.name];
+      if (!t) return null;
+      return {
+        serviceId: service.id,
+        locale: "fr",
+        name: t.name,
+        description: t.description ?? service.description,
+      };
+    })
+    .filter(Boolean);
+
+  if (translationRows.length > 0) {
+    console.log(`🌱 Seeding ${translationRows.length} French translations...`);
+    await prisma.serviceTranslation.createMany({ data: translationRows });
+  }
 
   console.log("✅ Done seeding services.");
 }

@@ -20,6 +20,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/components/language-provider";
 
 type ServiceCategory = "HAIR" | "HAMMAM_MASSAGE" | "NAILS" | "LASHES" | "FACIAL";
 
@@ -34,6 +35,112 @@ type Service = {
 
 const moroccoPhonePattern = /^(?:\+212|0)(?:5|6|7)\d{8}$/; // digits only, no spaces/dashes
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Lang = "en" | "fr";
+
+const copy = {
+  en: {
+    heading: "Book an Appointment",
+    subheading: "Choose your service, pick a date and time, and we’ll reserve your spot.",
+    backToMenu: "Back to menu",
+    step1: "1. Select a Service",
+    category: "Category",
+    chooseCategory: "Choose a category",
+    allServices: "All services",
+    service: "Service",
+    chooseService: "Choose a service",
+    durationLabel: (mins: number, price: number, desc?: string | null) =>
+      `${mins} min · ${price} DH${desc ? ` · ${desc}` : ""}`,
+    step2: "2. Choose a Date",
+    step3: "3. Choose a Time",
+    loadingTimes: "Loading available times...",
+    noSlots: "No slots available on this day. Please choose another date.",
+    step4: "4. Your Details",
+    name: "Name",
+    email: "Email",
+    phone: "Phone",
+    emailError: "Enter a valid email.",
+    phoneError: "Enter a valid Moroccan number (start with +212 or 0, digits only).",
+    confirmBooking: "Confirm Booking",
+    summary: "Booking Summary",
+    summaryCategory: "Category",
+    summaryService: "Service",
+    summaryDate: "Date",
+    summaryTime: "Time",
+    summaryName: "Name",
+    summaryPhone: "Phone",
+    policy: "By confirming your booking, you agree to the spa's cancellation policy.",
+    anyCategory: "Any",
+    notSelected: "Not selected",
+    successTitle: "Booking Confirmed 🎉",
+    successBody:
+      "Thank you! Your appointment has been booked. You will be contacted by the spa if any changes are needed.",
+    successCta: "Book another appointment",
+    bookButton: "Book an appointment",
+    backHome: "Back to main page",
+  },
+  fr: {
+    heading: "Réserver un rendez-vous",
+    subheading:
+      "Choisissez votre prestation, sélectionnez une date et une heure, et nous bloquons votre créneau.",
+    backToMenu: "Retour au menu",
+    step1: "1. Choisir une prestation",
+    category: "Catégorie",
+    chooseCategory: "Choisir une catégorie",
+    allServices: "Toutes les prestations",
+    service: "Prestation",
+    chooseService: "Choisir une prestation",
+    durationLabel: (mins: number, price: number, desc?: string | null) =>
+      `${mins} min · ${price} DH${desc ? ` · ${desc}` : ""}`,
+    step2: "2. Choisir une date",
+    step3: "3. Choisir un horaire",
+    loadingTimes: "Chargement des horaires disponibles...",
+    noSlots: "Pas de créneau disponible ce jour-là. Merci de choisir une autre date.",
+    step4: "4. Vos informations",
+    name: "Nom",
+    email: "Email",
+    phone: "Téléphone",
+    emailError: "Saisissez un email valide.",
+    phoneError: "Entrez un numéro marocain valide (commence par +212 ou 0, chiffres uniquement).",
+    confirmBooking: "Confirmer la réservation",
+    summary: "Récapitulatif",
+    summaryCategory: "Catégorie",
+    summaryService: "Prestation",
+    summaryDate: "Date",
+    summaryTime: "Horaire",
+    summaryName: "Nom",
+    summaryPhone: "Téléphone",
+    policy:
+      "En confirmant votre réservation, vous acceptez la politique d'annulation du spa.",
+    anyCategory: "Toutes",
+    notSelected: "Non sélectionné",
+    successTitle: "Réservation confirmée 🎉",
+    successBody:
+      "Merci ! Votre rendez-vous est réservé. Le spa vous contactera en cas de changement.",
+    successCta: "Réserver un autre rendez-vous",
+    bookButton: "Prendre rendez-vous",
+    backHome: "Retour à la page d'accueil",
+  },
+};
+
+const categoryLabels: Record<Lang, Record<ServiceCategory | "ALL", string>> = {
+  en: {
+    ALL: "All",
+    HAIR: "Hair",
+    HAMMAM_MASSAGE: "Hammam & Massage",
+    NAILS: "Nails",
+    LASHES: "Lash Extensions",
+    FACIAL: "Facial Care",
+  },
+  fr: {
+    ALL: "Toutes",
+    HAIR: "Coiffure",
+    HAMMAM_MASSAGE: "Hammam & Massage",
+    NAILS: "Ongles",
+    LASHES: "Extensions de cils",
+    FACIAL: "Soins du visage",
+  },
+};
 
 export default function BookingPage() {
   // Services & filters
@@ -55,6 +162,11 @@ export default function BookingPage() {
   const pathname = usePathname();
   const router = useRouter();
   const isAdminBooking = pathname?.startsWith("/admin/booking");
+  const { language } = useLanguage();
+  const t = copy[language];
+  const categoryCopy = categoryLabels[language];
+  const currentCategoryLabel =
+    selectedCategory === "ALL" ? t.anyCategory : categoryCopy[selectedCategory];
 
   // UI state
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -67,7 +179,7 @@ export default function BookingPage() {
   useEffect(() => {
     async function loadServices() {
       try {
-        const res = await fetch("/api/services");
+        const res = await fetch(`/api/services?lang=${language}`);
         if (!res.ok) {
           console.error("Failed to load services:", res.status, await res.text());
           return;
@@ -80,7 +192,7 @@ export default function BookingPage() {
     }
 
     loadServices();
-  }, []);
+  }, [language]);
 
   // Filtered services by category
   const filteredServices = useMemo(
@@ -139,12 +251,12 @@ export default function BookingPage() {
     if (!clientName) return;
     const normalizedEmail = clientEmail.trim().toLowerCase();
     if (!emailPattern.test(normalizedEmail)) {
-      setEmailError("Enter a valid email.");
+      setEmailError(t.emailError);
       return;
     }
     const normalizedPhone = clientPhone.replace(/[\s-]/g, "").trim();
     if (!moroccoPhonePattern.test(normalizedPhone)) {
-      setPhoneError("Enter a valid Moroccan number (start with +212 or 0, digits only).");
+      setPhoneError(t.phoneError);
       return;
     }
 
@@ -195,10 +307,8 @@ export default function BookingPage() {
   if (success) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
-        <h1 className="mb-2 text-2xl font-bold">Booking Confirmed 🎉</h1>
-        <p className="mb-6 text-sm text-slate-400">
-          Thank you! Your appointment has been booked. You will be contacted by the spa if any changes are needed.
-        </p>
+        <h1 className="mb-2 text-2xl font-bold">{t.successTitle}</h1>
+        <p className="mb-6 text-sm text-slate-400">{t.successBody}</p>
         <Button
           variant="outline"
           onClick={() => {
@@ -211,7 +321,7 @@ export default function BookingPage() {
             setClientPhone("");
           }}
         >
-          Book another appointment
+          {t.successCta}
         </Button>
       </div>
     );
@@ -224,14 +334,12 @@ export default function BookingPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Book an Appointment</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Choose your service, pick a date and time, and we’ll reserve your spot.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.heading}</h1>
+          <p className="mt-2 text-sm text-slate-400">{t.subheading}</p>
         </div>
         <Button variant="outline" asChild>
           <a href="/menu" className="rounded-full border-amber-500 text-amber-700 hover:bg-amber-50">
-            Back to menu
+            {t.backToMenu}
           </a>
         </Button>
       </div>
@@ -242,13 +350,13 @@ export default function BookingPage() {
           {/* STEP 1 – SERVICE */}
           <Card>
             <CardHeader>
-              <CardTitle>1. Select a Service</CardTitle>
+              <CardTitle>{t.step1}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Category filter */}
               <div>
                 <Label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-                  Category
+                  {t.category}
                 </Label>
                 <Select
                   value={selectedCategory}
@@ -260,15 +368,15 @@ export default function BookingPage() {
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a category" />
+                    <SelectValue placeholder={t.chooseCategory} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">All services</SelectItem>
-                    <SelectItem value="HAIR">Hair</SelectItem>
-                    <SelectItem value="HAMMAM_MASSAGE">Hammam &amp; Massage</SelectItem>
-                    <SelectItem value="NAILS">Nails</SelectItem>
-                    <SelectItem value="LASHES">Lash Extensions</SelectItem>
-                    <SelectItem value="FACIAL">Facial Care</SelectItem>
+                    <SelectItem value="ALL">{t.allServices}</SelectItem>
+                    <SelectItem value="HAIR">{categoryCopy.HAIR}</SelectItem>
+                    <SelectItem value="HAMMAM_MASSAGE">{categoryCopy.HAMMAM_MASSAGE}</SelectItem>
+                    <SelectItem value="NAILS">{categoryCopy.NAILS}</SelectItem>
+                    <SelectItem value="LASHES">{categoryCopy.LASHES}</SelectItem>
+                    <SelectItem value="FACIAL">{categoryCopy.FACIAL}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -276,7 +384,7 @@ export default function BookingPage() {
               {/* Service select */}
               <div>
                 <Label className="mb-1 block text-xs uppercase tracking-wide text-slate-400">
-                  Service
+                  {t.service}
                 </Label>
                 <Select
                   value={selectedService ?? undefined}
@@ -287,7 +395,7 @@ export default function BookingPage() {
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a service" />
+                    <SelectValue placeholder={t.chooseService} />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredServices.map((service) => (
@@ -301,8 +409,11 @@ export default function BookingPage() {
                 {/* Show duration & price hint */}
                 {selectedServiceObj && (
                   <p className="mt-2 text-xs text-slate-400">
-                    {selectedServiceObj.durationMinutes} min · {selectedServiceObj.price} DH
-                    {selectedServiceObj.description ? ` · ${selectedServiceObj.description}` : ""}
+                    {t.durationLabel(
+                      selectedServiceObj.durationMinutes,
+                      selectedServiceObj.price,
+                      selectedServiceObj.description
+                    )}
                   </p>
                 )}
               </div>
@@ -313,7 +424,7 @@ export default function BookingPage() {
           {selectedService && (
             <Card>
               <CardHeader>
-                <CardTitle>2. Choose a Date</CardTitle>
+                <CardTitle>{t.step2}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Calendar
@@ -330,15 +441,13 @@ export default function BookingPage() {
           {selectedService && selectedDate && (
             <Card>
               <CardHeader>
-                <CardTitle>3. Choose a Time</CardTitle>
+                <CardTitle>{t.step3}</CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingSlots ? (
-                  <p className="text-sm text-slate-400">Loading available times...</p>
+                  <p className="text-sm text-slate-400">{t.loadingTimes}</p>
                 ) : availableSlots.length === 0 ? (
-                  <p className="text-sm text-slate-400">
-                    No slots available on this day. Please choose another date.
-                  </p>
+                  <p className="text-sm text-slate-400">{t.noSlots}</p>
                 ) : (
                   <div className="grid grid-cols-3 gap-3">
                     {availableSlots.map((time) => (
@@ -361,18 +470,18 @@ export default function BookingPage() {
           {selectedTime && (
             <Card>
               <CardHeader>
-                <CardTitle>4. Your Details</CardTitle>
+                <CardTitle>{t.step4}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Name</Label>
+                  <Label>{t.name}</Label>
                   <Input
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
               />
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t.email}</Label>
               <Input
                 type="email"
                 value={clientEmail}
@@ -382,14 +491,14 @@ export default function BookingPage() {
                     setEmailError(null);
                   }
                 }}
-                placeholder="you@example.com"
+                placeholder={language === "fr" ? "vous@example.com" : "you@example.com"}
               />
               {emailError && (
-                <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                <p className="mt-1 text-xs text-red-500">{t.emailError}</p>
               )}
             </div>
             <div>
-              <Label>Phone</Label>
+              <Label>{t.phone}</Label>
               <Input
                 value={clientPhone}
                 onChange={(e) => {
@@ -402,7 +511,7 @@ export default function BookingPage() {
                 placeholder="+212612345678"
               />
               {phoneError && (
-                <p className="mt-1 text-xs text-red-500">{phoneError}</p>
+                <p className="mt-1 text-xs text-red-500">{t.phoneError}</p>
               )}
             </div>
 
@@ -418,7 +527,7 @@ export default function BookingPage() {
                 !selectedTime
               }
             >
-                  {submitting ? "Submitting..." : "Confirm Booking"}
+                  {submitting ? `${t.confirmBooking}...` : t.confirmBooking}
                 </Button>
               </CardContent>
             </Card>
@@ -429,47 +538,50 @@ export default function BookingPage() {
         <aside className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Booking Summary</CardTitle>
+              <CardTitle>{t.summary}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Category</span>
+                <span className="text-slate-400">{t.summaryCategory}</span>
+                <span>{currentCategoryLabel}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-400">{t.summaryService}</span>
+                <span>{selectedServiceObj?.name ?? t.notSelected}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-400">{t.summaryDate}</span>
                 <span>
-                  {selectedCategory === "ALL" ? "Any" : selectedCategory.replace("_", " & ")}
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString(
+                        language === "fr" ? "fr-FR" : "en-US",
+                        { dateStyle: "medium" }
+                      )
+                    : t.notSelected}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-slate-400">Service</span>
-                <span>{selectedServiceObj?.name ?? "Not selected"}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Date</span>
-                <span>{selectedDate ? format(selectedDate, "PPP") : "Not selected"}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Time</span>
-                <span>{selectedTime ?? "Not selected"}</span>
+                <span className="text-slate-400">{t.summaryTime}</span>
+                <span>{selectedTime ?? t.notSelected}</span>
               </div>
 
               <div className="h-px bg-slate-800 my-2" />
 
               <div className="flex justify-between">
-                <span className="text-slate-400">Name</span>
+                <span className="text-slate-400">{t.summaryName}</span>
                 <span>{clientName || "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Phone</span>
+                <span className="text-slate-400">{t.summaryPhone}</span>
                 <span>{clientPhone || "—"}</span>
               </div>
             </CardContent>
           </Card>
 
-          <p className="text-xs text-slate-500">
-            By confirming your booking, you agree to the spa&apos;s cancellation policy.
-          </p>
+          <p className="text-xs text-slate-500">{t.policy}</p>
         </aside>
       </div>
     </div>

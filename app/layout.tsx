@@ -1,5 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
+import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[#F7F3EE] text-slate-50 antialiased">
-        <main className="min-h-screen">{children}</main>
+        <LanguageProvider>
+          <main className="min-h-screen">{children}</main>
+        </LanguageProvider>
       </body>
     </html>
   );

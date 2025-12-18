@@ -1,30 +1,65 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/language-provider";
+
+const copy = {
+  en: {
+    kicker: "Fifth Avenue Wellness & Spa",
+    welcome: "Welcome to",
+    highlight: "Fifth Avenue",
+    intro:
+      "Escape the noise of the city and step into a space of calm. From hammam rituals and relaxing massages to hair, nails and facial care, our team is here to make you feel renewed.",
+    services: "Hammam · Massage · Hair · Nails · Facial",
+    ctaBook: "Book your appointment",
+    ctaMenu: "View Menu",
+    badge: "Now accepting online bookings",
+    hero1: "Hammam and massage area at Fifth Avenue",
+    hero2: "Relaxing massage at Fifth Avenue",
+    hero3: "Hair and beauty area at Fifth Avenue",
+  },
+  fr: {
+    kicker: "Fifth Avenue Wellness & Spa",
+    welcome: "Bienvenue à",
+    highlight: "Fifth Avenue",
+    intro:
+      "Évadez-vous du bruit de la ville et entrez dans un espace de calme. Hammam, massages relaxants, coiffure, ongles et soins du visage : notre équipe est là pour vous ressourcer.",
+    services: "Hammam · Massage · Coiffure · Ongles · Visage",
+    ctaBook: "Réserver un rendez-vous",
+    ctaMenu: "Voir la carte",
+    badge: "Réservation en ligne disponible",
+    hero1: "Espace hammam et massage chez Fifth Avenue",
+    hero2: "Massage relaxant chez Fifth Avenue",
+    hero3: "Espace coiffure et beauté chez Fifth Avenue",
+  },
+};
 
 export default function HomePage() {
+  const { language } = useLanguage();
+  const t = copy[language];
+
   return (
     <main className="min-h-[calc(100vh-80px)] bg-[#F7F3EE] text-slate-800">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 lg:grid lg:grid-cols-2 lg:items-center lg:px-8 lg:py-16">
         {/* LEFT: text + CTA */}
         <section className="space-y-6">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-yellow-400">
-            Fifth Avenue Wellness & Spa
+            {t.kicker}
           </p>
 
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Welcome to{" "}
-            <span className="text-yellow-500">Fifth Avenue</span>
+            {t.welcome}{" "}
+            <span className="text-yellow-500">{t.highlight}</span>
           </h1>
 
           <p className="max-w-md text-sm leading-relaxed text-slate-800 sm:text-base">
-            Escape the noise of the city and step into a space of calm.
-            From hammam rituals and relaxing massages to hair, nails and
-            facial care, our team is here to make you feel renewed.
+            {t.intro}
           </p>
 
           <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
-            Hammam · Massage · Hair · Nails · Facial
+            {t.services}
           </p>
 
         <div
@@ -35,7 +70,7 @@ export default function HomePage() {
                   size="lg"
                   className="w-full rounded-full px-8 sm:w-auto transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(255,200,65,0.4)] hover:text-yellow-300 active:scale-[0.97]"
                 >
-                Book your appointment
+                {t.ctaBook}
                 </Button>
             </Link>
 
@@ -45,7 +80,7 @@ export default function HomePage() {
                 variant="outline"
                 size="lg"
                 className=" w-full rounded-full px-8 sm:w-auto border-amber-300 text-amber-300 hover:bg-amber-300/10 transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(255,200,65,0.3)] active:scale-[0.97]">
-                View Menu
+                {t.ctaMenu}
                 </Button>
             </Link>
             </div>
@@ -62,6 +97,7 @@ export default function HomePage() {
               <Image
                 src="/images/spa-1.png"
                 alt="Hammam and massage area at Fifth Avenue"
+                alt={t.hero1}
                 fill
                 className="rounded-3xl object-cover"
                 priority
@@ -73,6 +109,7 @@ export default function HomePage() {
               <Image
                 src="/images/spa-2.png"
                 alt="Relaxing massage at Fifth Avenue"
+                alt={t.hero2}
                 fill
                 className="rounded-3xl object-cover"
               />
@@ -83,6 +120,7 @@ export default function HomePage() {
               <Image
                 src="/images/spa-3.png"
                 alt="Hair and beauty area at Fifth Avenue"
+                alt={t.hero3}
                 fill
                 className="rounded-3xl object-cover"
               />
@@ -92,7 +130,7 @@ export default function HomePage() {
           {/* badge */}
           <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/80 px-4 py-2 text-xs text-amber-100 shadow-lg shadow-black/40 backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span>Now accepting online bookings</span>
+            <span>{t.badge}</span>
           </div>
         </section>
       </div>
